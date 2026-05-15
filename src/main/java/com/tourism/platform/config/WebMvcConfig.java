@@ -4,6 +4,7 @@ import com.tourism.platform.security.AdminAuthInterceptor;
 import com.tourism.platform.security.BookingManagementInterceptor;
 import com.tourism.platform.security.CustomerAuthInterceptor;
 import com.tourism.platform.security.NotificationBadgeInterceptor;
+import com.tourism.platform.security.SharedAuthInterceptor;
 import com.tourism.platform.security.StaffAuthInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -18,17 +19,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private final CustomerAuthInterceptor customerAuthInterceptor;
     private final BookingManagementInterceptor bookingManagementInterceptor;
     private final NotificationBadgeInterceptor notificationBadgeInterceptor;
+    private final SharedAuthInterceptor sharedAuthInterceptor;
 
     public WebMvcConfig(AdminAuthInterceptor adminAuthInterceptor,
                         StaffAuthInterceptor staffAuthInterceptor,
                         CustomerAuthInterceptor customerAuthInterceptor,
                         BookingManagementInterceptor bookingManagementInterceptor,
-                        NotificationBadgeInterceptor notificationBadgeInterceptor) {
+                        NotificationBadgeInterceptor notificationBadgeInterceptor,
+                        SharedAuthInterceptor sharedAuthInterceptor) {
         this.adminAuthInterceptor = adminAuthInterceptor;
         this.staffAuthInterceptor = staffAuthInterceptor;
         this.customerAuthInterceptor = customerAuthInterceptor;
         this.bookingManagementInterceptor = bookingManagementInterceptor;
         this.notificationBadgeInterceptor = notificationBadgeInterceptor;
+        this.sharedAuthInterceptor = sharedAuthInterceptor;
     }
 
     @Override
@@ -38,7 +42,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/users/register", "/users/login");
 
         registry.addInterceptor(adminAuthInterceptor)
-                .addPathPatterns("/packages/**");
+                .addPathPatterns("/packages/**")
+                .excludePathPatterns("/packages/detail", "/packages/list", "/packages/");
 
         registry.addInterceptor(adminAuthInterceptor)
                 .addPathPatterns("/destinations/**");
@@ -65,6 +70,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/feedback/customer/**",
                         "/notifications/my", "/notifications/mark-read");
 
+        registry.addInterceptor(sharedAuthInterceptor)
+                .addPathPatterns("/packages/detail", "/packages/list", "/packages/");
+
         registry.addInterceptor(bookingManagementInterceptor)
                 .addPathPatterns("/bookings/**")
                 .excludePathPatterns(
@@ -81,7 +89,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(notificationBadgeInterceptor)
                 .addPathPatterns("/bookings/my", "/bookings/new", "/bookings/create",
                         "/bookings/customer/edit", "/bookings/customer/update",
-                        "/feedback/customer/**", "/notifications/**");
+                        "/feedback/customer/**", "/notifications/**", "/packages/detail");
     }
 
     @Override
