@@ -4,6 +4,7 @@ import com.tourism.platform.security.AdminAuthInterceptor;
 import com.tourism.platform.security.BookingManagementInterceptor;
 import com.tourism.platform.security.CustomerAuthInterceptor;
 import com.tourism.platform.security.NotificationBadgeInterceptor;
+import com.tourism.platform.security.SharedAuthInterceptor;
 import com.tourism.platform.security.StaffAuthInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -42,7 +43,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(adminAuthInterceptor)
                 .addPathPatterns("/packages/**")
-                .excludePathPatterns("/packages/detail");
+                .excludePathPatterns("/packages/detail", "/packages/list", "/packages/");
 
         registry.addInterceptor(adminAuthInterceptor)
                 .addPathPatterns("/destinations/**");
@@ -70,7 +71,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/notifications/my", "/notifications/mark-read");
 
         registry.addInterceptor(sharedAuthInterceptor)
-                .addPathPatterns("/packages/detail");
+                .addPathPatterns("/packages/detail", "/packages/list", "/packages/");
 
         registry.addInterceptor(bookingManagementInterceptor)
                 .addPathPatterns("/bookings/**")

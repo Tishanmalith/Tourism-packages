@@ -116,6 +116,12 @@
                                     <td class="small text-secondary">${empty b.notes ? '—' : b.notes}</td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1 flex-wrap">
+                                            <%-- View Package Details --%>
+                                            <a class="btn btn-sm btn-outline-info rounded-pill action-btn"
+                                               href="${pageContext.request.contextPath}/packages/detail?id=${b.packageId}">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+
                                             <%-- Edit: only for PENDING --%>
                                             <c:choose>
                                                 <c:when test="${canEdit}">
@@ -165,6 +171,34 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div class="mt-5 tp-animate-fade-up" style="animation-delay: 0.2s;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold mb-0">Explore Our Packages</h2>
+            <a href="${pageContext.request.contextPath}/packages/list" class="btn btn-link text-decoration-none fw-semibold">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-4">
+            <c:forEach var="pkg" items="${packages}" varStatus="loop">
+                <c:if test="${loop.index < 3}">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 tp-glass-rise overflow-hidden">
+                            <div class="card-body p-4 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h3 class="h5 fw-bold mb-0">${pkg.name}</h3>
+                                    <span class="badge rounded-pill text-bg-success align-self-start">${pkg.durationDays}d</span>
+                                </div>
+                                <p class="text-secondary small flex-grow-1 mb-3">${empty pkg.description ? 'Experience the journey of a lifetime.' : pkg.description}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                    <div class="fw-bold text-primary"><vh:price-lkr value="${pkg.price}"/></div>
+                                    <a href="${pageContext.request.contextPath}/packages/detail?id=${pkg.id}" class="btn btn-sm btn-primary rounded-pill px-3">Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </c:if>
+            </c:forEach>
         </div>
     </div>
 </div>
