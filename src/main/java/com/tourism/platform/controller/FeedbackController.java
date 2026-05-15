@@ -74,10 +74,10 @@ public class FeedbackController {
 
     @PostMapping("/create")
     public String adminCreate(@RequestParam(required = false) String userId,
-                             @RequestParam(required = false) Long packageId,
-                             @RequestParam(required = false) Integer rating,
-                             @RequestParam(required = false) String comment,
-                             Model model) {
+                              @RequestParam(required = false) Long packageId,
+                              @RequestParam(required = false) Integer rating,
+                              @RequestParam(required = false) String comment,
+                              Model model) {
         String err = adminFeedbackErrors(userId, packageId, rating, comment);
         if (err != null) {
             int r = rating == null ? 0 : clampRating(rating);
@@ -110,11 +110,11 @@ public class FeedbackController {
 
     @PostMapping("/update")
     public String adminUpdate(@RequestParam Long id,
-                             @RequestParam(required = false) String userId,
-                             @RequestParam(required = false) Long packageId,
-                             @RequestParam(required = false) Integer rating,
-                             @RequestParam(required = false) String comment,
-                             Model model) {
+                              @RequestParam(required = false) String userId,
+                              @RequestParam(required = false) Long packageId,
+                              @RequestParam(required = false) Integer rating,
+                              @RequestParam(required = false) String comment,
+                              Model model) {
         Optional<Feedback> existing = feedbackService.findById(id);
         if (existing.isEmpty()) {
             return "redirect:/feedback/list";
@@ -183,7 +183,72 @@ public class FeedbackController {
         Feedback f = buildFeedback(null, user.getId(), packageId, clampRating(rating), comment,
                 TripFeedbackRules.today().toString(), 900);
         feedbackService.save(f);
-        return "redirect:/bookings/my";
+        return "redirect:/feedback/customer/my";
+    }
+
+    /** Customer: list their own feedback. */
+    @GetMapping("/customer/my")
+    public String customerMyFeedback(HttpSession session, Model model) {
+        User user = (User) session.getAttribute(SessionKeys.CUSTOMER);
+        if (user == null) return "redirect:/users/login";
+        List<Feedback> myFeedback = feedbackService.findByUserId(user.getId());
+        model.addAttribute("feedbackList", myFeedback);
+        model.addAttribute("packages", packageService.findAll());
+        model.addAttribute("user", user);
+        return "feedback/customer-my";
+    }
+
+    /** Customer: show edit form for their own feedback. */
+    @GetMapping("/customer/edit")
+    public String customerEditForm(@RequestParam Long id, HttpSession session, Model model) {
+        User user = (User) session.getAttribute(SessionKeys.CUSTOMER);
+        if (user == null) return "redirect:/users/login";
+        Optional<Feedback> opt = feedbackService.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(user.getId())) {
+            return "redirect:/feedback/customer/my";
+        }
+        model.addAttribute("feedback", opt.get());
+        model.addAttribute("editMode", true);
+        return "feedback/customer-edit";
+    }
+
+    /** Customer: save edited feedback (only their own). */
+    @PostMapping("/customer/edit")
+    public String customerUpdate(@RequestParam Long id,
+                                 @RequestParam(required = false) Integer rating,
+                                 @RequestParam(required = false, defaultValue = "") String comment,
+                                 HttpSession session,
+                                 Model model) {
+        User user = (User) session.getAttribute(SessionKeys.CUSTOMER);
+        if (user == null) return "redirect:/users/login";
+        Optional<Feedback> opt = feedbackService.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(user.getId())) {
+            return "redirect:/feedback/customer/my";
+        }
+        if (rating == null || !ValidationSupport.inRange(rating, 1, 5)) {
+            model.addAttribute("message", "Please choose a star rating between 1 and 5.");
+            model.addAttribute("feedback", opt.get());
+            model.addAttribute("editMode", true);
+            return "feedback/customer-edit";
+        }
+        Feedback existing = opt.get();
+        Feedback updated = buildFeedback(id, user.getId(), existing.getPackageId(),
+                clampRating(rating), comment, existing.getCreatedAt(), 900);
+        feedbackService.save(updated);
+        return "redirect:/feedback/customer/my";
+    }
+
+    /** Customer: delete their own feedback. */
+    @PostMapping("/customer/delete")
+    public String customerDelete(@RequestParam Long id, HttpSession session) {
+        User user = (User) session.getAttribute(SessionKeys.CUSTOMER);
+        if (user == null) return "redirect:/users/login";
+        feedbackService.findById(id).ifPresent(f -> {
+            if (f.getUserId().equals(user.getId())) {
+                feedbackService.deleteById(id);
+            }
+        });
+        return "redirect:/feedback/customer/my";
     }
 
     /**
@@ -239,12 +304,12 @@ public class FeedbackController {
     }
 
     private static Feedback buildFeedback(Long id,
-                                         String userId,
-                                         Long packageId,
-                                         int rating,
-                                         String comment,
-                                         String createdAt,
-                                         int commentMaxLen) {
+                                          String userId,
+                                          Long packageId,
+                                          int rating,
+                                          String comment,
+                                          String createdAt,
+                                          int commentMaxLen) {
         Feedback f = new Feedback();
         f.setId(id);
         f.setUserId(userId == null ? "" : userId.trim());

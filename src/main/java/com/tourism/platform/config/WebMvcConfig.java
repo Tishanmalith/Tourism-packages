@@ -3,6 +3,7 @@ package com.tourism.platform.config;
 import com.tourism.platform.security.AdminAuthInterceptor;
 import com.tourism.platform.security.BookingManagementInterceptor;
 import com.tourism.platform.security.CustomerAuthInterceptor;
+import com.tourism.platform.security.NotificationBadgeInterceptor;
 import com.tourism.platform.security.StaffAuthInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -16,15 +17,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private final StaffAuthInterceptor staffAuthInterceptor;
     private final CustomerAuthInterceptor customerAuthInterceptor;
     private final BookingManagementInterceptor bookingManagementInterceptor;
+    private final NotificationBadgeInterceptor notificationBadgeInterceptor;
 
     public WebMvcConfig(AdminAuthInterceptor adminAuthInterceptor,
                         StaffAuthInterceptor staffAuthInterceptor,
                         CustomerAuthInterceptor customerAuthInterceptor,
-                        BookingManagementInterceptor bookingManagementInterceptor) {
+                        BookingManagementInterceptor bookingManagementInterceptor,
+                        NotificationBadgeInterceptor notificationBadgeInterceptor) {
         this.adminAuthInterceptor = adminAuthInterceptor;
         this.staffAuthInterceptor = staffAuthInterceptor;
         this.customerAuthInterceptor = customerAuthInterceptor;
         this.bookingManagementInterceptor = bookingManagementInterceptor;
+        this.notificationBadgeInterceptor = notificationBadgeInterceptor;
     }
 
     @Override
@@ -56,7 +60,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/staff/**");
 
         registry.addInterceptor(customerAuthInterceptor)
-                .addPathPatterns("/bookings/new", "/bookings/create", "/bookings/my", "/feedback/customer/**");
+                .addPathPatterns("/bookings/new", "/bookings/create", "/bookings/my",
+                        "/bookings/customer/edit", "/bookings/customer/update", "/bookings/customer/cancel",
+                        "/feedback/customer/**",
+                        "/notifications/my", "/notifications/mark-read");
 
         registry.addInterceptor(bookingManagementInterceptor)
                 .addPathPatterns("/bookings/**")
@@ -64,8 +71,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/bookings/new",
                         "/bookings/create",
                         "/bookings/my",
+                        "/bookings/customer/edit",
+                        "/bookings/customer/update",
+                        "/bookings/customer/cancel",
                         "/bookings/delete",
                         "/bookings/delete/**");
+
+        // Inject unread notification count for all customer pages
+        registry.addInterceptor(notificationBadgeInterceptor)
+                .addPathPatterns("/bookings/my", "/bookings/new", "/bookings/create",
+                        "/bookings/customer/edit", "/bookings/customer/update",
+                        "/feedback/customer/**", "/notifications/**");
     }
 
     @Override

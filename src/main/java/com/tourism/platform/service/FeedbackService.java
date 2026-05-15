@@ -39,6 +39,13 @@ public class FeedbackService {
         return findAll().stream().filter(f -> Objects.equals(f.getId(), id)).findFirst();
     }
 
+    /** All feedback submitted by a specific user. */
+    public List<Feedback> findByUserId(String userId) {
+        return findAll().stream()
+                .filter(f -> Objects.equals(f.getUserId(), userId))
+                .collect(Collectors.toList());
+    }
+
     public Feedback save(Feedback item) {
         List<Feedback> all = loadAll();
         if (item.getId() == null) {

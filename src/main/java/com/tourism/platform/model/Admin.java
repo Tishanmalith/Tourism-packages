@@ -2,62 +2,22 @@ package com.tourism.platform.model;
 
 import java.io.Serializable;
 
-public class Admin implements Serializable {
+public class Admin extends Person<Long> {
 
-    private Long id;
-    private String username;
-    private String password;
-    private String fullName;
-    private String email;
+    // 2. Inheritance: Admin inherits id, username, password, fullName, and email from Person.
 
     public Admin() {
     }
 
     public Admin(Long id, String username, String password, String fullName, String email) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.fullName = fullName;
-        this.email = email;
+        super(id, username, password, fullName, email);
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    /**
+     * 3. Polymorphism: Overriding the abstract method from Person.
+     */
+    @Override
+    public String getRoleName() {
+        return "ADMIN";
     }
 }

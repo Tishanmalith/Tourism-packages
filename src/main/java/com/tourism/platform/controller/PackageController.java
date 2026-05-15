@@ -52,11 +52,11 @@ public class PackageController {
 
     @PostMapping("/create")
     public String create(@RequestParam String name,
-                        @RequestParam(required = false) String description,
-                        @RequestParam(required = false) Double price,
-                        @RequestParam(required = false) Integer durationDays,
-                        @RequestParam(required = false) Long destinationId,
-                        Model model) {
+                         @RequestParam(required = false) String description,
+                         @RequestParam(required = false) Double price,
+                         @RequestParam(required = false) Integer durationDays,
+                         @RequestParam(required = false) Long destinationId,
+                         Model model) {
         String err = packageFieldErrors(name, description, price, durationDays, destinationId);
         if (err != null) {
             TourPackage p = buildPackage(null, name, description, priceOrZero(price),
@@ -94,12 +94,12 @@ public class PackageController {
 
     @PostMapping("/update")
     public String update(@RequestParam Long id,
-                        @RequestParam String name,
-                        @RequestParam(required = false) String description,
-                        @RequestParam(required = false) Double price,
-                        @RequestParam(required = false) Integer durationDays,
-                        @RequestParam(required = false) Long destinationId,
-                        Model model) {
+                         @RequestParam String name,
+                         @RequestParam(required = false) String description,
+                         @RequestParam(required = false) Double price,
+                         @RequestParam(required = false) Integer durationDays,
+                         @RequestParam(required = false) Long destinationId,
+                         Model model) {
         String err = packageFieldErrors(name, description, price, durationDays, destinationId);
         if (err != null) {
             TourPackage p = buildPackage(id, name, description, priceOrZero(price),
@@ -141,10 +141,10 @@ public class PackageController {
      * @return error message or null if OK
      */
     private static String packageFieldErrors(String name,
-                                            String description,
-                                            Double price,
-                                            Integer durationDays,
-                                            Long destinationId) {
+                                             String description,
+                                             Double price,
+                                             Integer durationDays,
+                                             Long destinationId) {
         if (ValidationSupport.isBlank(name) || name.trim().length() > 160) {
             return "Name is required (max 160 characters).";
         }
@@ -170,11 +170,11 @@ public class PackageController {
     }
 
     private static TourPackage buildPackage(Long id,
-                                           String name,
-                                           String description,
-                                           Double price,
-                                           Integer durationDays,
-                                           Long destinationId) {
+                                            String name,
+                                            String description,
+                                            Double price,
+                                            Integer durationDays,
+                                            Long destinationId) {
         TourPackage p = new TourPackage();
         p.setId(id);
         p.setName(ValidationSupport.trimLen(name == null ? "" : name.trim(), 160));

@@ -45,9 +45,9 @@ public class DestinationController {
 
     @PostMapping("/create")
     public String create(@RequestParam(required = false) String name,
-                        @RequestParam(required = false) String country,
-                        @RequestParam(required = false) String description,
-                        Model model) {
+                         @RequestParam(required = false) String country,
+                         @RequestParam(required = false) String description,
+                         Model model) {
         String err = destinationFieldErrors(name, country, description);
         if (err != null) {
             model.addAttribute("message", err);
@@ -72,10 +72,10 @@ public class DestinationController {
 
     @PostMapping("/update")
     public String update(@RequestParam Long id,
-                        @RequestParam(required = false) String name,
-                        @RequestParam(required = false) String country,
-                        @RequestParam(required = false) String description,
-                        Model model) {
+                         @RequestParam(required = false) String name,
+                         @RequestParam(required = false) String country,
+                         @RequestParam(required = false) String description,
+                         Model model) {
         String err = destinationFieldErrors(name, country, description);
         if (err != null) {
             model.addAttribute("message", err);

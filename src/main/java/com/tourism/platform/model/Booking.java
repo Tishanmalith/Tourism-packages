@@ -2,9 +2,8 @@ package com.tourism.platform.model;
 
 import java.io.Serializable;
 
-public class Booking implements Serializable {
+public class Booking extends BaseEntity<Long> {
 
-    private Long id;
     /** References {@link User#getId()} (UUID string from users.txt). */
     private String userId;
     private Long packageId;
@@ -15,12 +14,9 @@ public class Booking implements Serializable {
     public Booking() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    @Override
+    public String getEntityDescriptor() {
+        return "Booking " + getId() + " - " + status;
     }
 
     public String getUserId() {

@@ -2,9 +2,11 @@ package com.tourism.platform.controller;
 
 import com.tourism.platform.model.Admin;
 import com.tourism.platform.model.Booking;
+import com.tourism.platform.model.TourPackage;
 import com.tourism.platform.model.User;
 import com.tourism.platform.security.SessionKeys;
 import com.tourism.platform.service.BookingService;
+import com.tourism.platform.service.NotificationService;
 import com.tourism.platform.service.PackageService;
 import com.tourism.platform.service.UserService;
 import com.tourism.platform.util.TripFeedbackRules;
@@ -27,13 +29,16 @@ public class BookingController {
     private final BookingService bookingService;
     private final PackageService packageService;
     private final UserService userService;
+    private final NotificationService notificationService;
 
     public BookingController(BookingService bookingService,
                              PackageService packageService,
-                             UserService userService) {
+                             UserService userService,
+                             NotificationService notificationService) {
         this.bookingService = bookingService;
         this.packageService = packageService;
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping({"", "/"})
@@ -65,10 +70,10 @@ public class BookingController {
 
     @PostMapping("/create")
     public String create(@RequestParam(required = false) Long packageId,
-                        @RequestParam(required = false) String tripDate,
-                        @RequestParam(required = false, defaultValue = "") String notes,
-                        HttpSession session,
-                        Model model) {
+                         @RequestParam(required = false) String tripDate,
+                         @RequestParam(required = false, defaultValue = "") String notes,
+                         HttpSession session,
+                         Model model) {
         User user = (User) session.getAttribute(SessionKeys.CUSTOMER);
         if (user == null) {
             return "redirect:/users/login";
@@ -128,6 +133,113 @@ public class BookingController {
         return b;
     }
 
+    // -----------------------------------------------------------------------
+    // Customer self-service: edit & cancel
+    // -----------------------------------------------------------------------
+
+    /**
+     * Customer edit form — only allowed while booking is PENDING.
+     */
+    @GetMapping("/customer/edit")
+    public String customerEditForm(@RequestParam Long id, HttpSession session, Model model) {
+        User user = (User) session.getAttribute(SessionKeys.CUSTOMER);
+        if (user == null) return "redirect:/users/login";
+
+        Optional<Booking> opt = bookingService.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(user.getId())) {
+            return "redirect:/bookings/my";
+        }
+        Booking b = opt.get();
+        if (!"PENDING".equalsIgnoreCase(nullToBlank(b.getStatus()))) {
+            // Only PENDING bookings can be edited by the customer
+            return "redirect:/bookings/my?error=cannotEdit";
+        }
+        model.addAttribute("booking", b);
+        model.addAttribute("packages", packageService.findAll());
+        model.addAttribute("minTripDate", TripFeedbackRules.today().toString());
+        model.addAttribute("maxTripDate", TripFeedbackRules.today().plusYears(2).toString());
+        return "booking/customer-edit";
+    }
+
+    /**
+     * Customer saves the edited booking — ownership + PENDING guard.
+     */
+    @PostMapping("/customer/update")
+    public String customerUpdate(@RequestParam Long id,
+                                 @RequestParam(required = false) Long packageId,
+                                 @RequestParam(required = false) String tripDate,
+                                 @RequestParam(required = false, defaultValue = "") String notes,
+                                 HttpSession session,
+                                 Model model) {
+        User user = (User) session.getAttribute(SessionKeys.CUSTOMER);
+        if (user == null) return "redirect:/users/login";
+
+        Optional<Booking> opt = bookingService.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(user.getId())) {
+            return "redirect:/bookings/my";
+        }
+        Booking existing = opt.get();
+        if (!"PENDING".equalsIgnoreCase(nullToBlank(existing.getStatus()))) {
+            return "redirect:/bookings/my?error=cannotEdit";
+        }
+
+        // Shared validation helpers
+        model.addAttribute("packages", packageService.findAll());
+        model.addAttribute("minTripDate", TripFeedbackRules.today().toString());
+        model.addAttribute("maxTripDate", TripFeedbackRules.today().plusYears(2).toString());
+        model.addAttribute("booking", existing);
+
+        var tripStart = TripFeedbackRules.parseBookingStart(tripDate == null ? "" : tripDate.trim());
+        var today     = TripFeedbackRules.today();
+
+        if (tripStart == null) {
+            model.addAttribute("message", "Pick a valid trip start date (yyyy-mm-dd).");
+            return "booking/customer-edit";
+        }
+        if (tripStart.isBefore(today)) {
+            model.addAttribute("message", "Trip start cannot be before today.");
+            return "booking/customer-edit";
+        }
+        if (tripStart.isAfter(today.plusYears(2))) {
+            model.addAttribute("message", "Trip start cannot be more than two years ahead.");
+            return "booking/customer-edit";
+        }
+        if (packageId == null || packageId < 1 || packageService.findById(packageId).isEmpty()) {
+            model.addAttribute("message", "Please choose a valid package.");
+            return "booking/customer-edit";
+        }
+
+        existing.setPackageId(packageId);
+        existing.setBookingDate(tripStart.toString());
+        existing.setNotes(ValidationSupport.trimLen(notes, 500));
+        bookingService.save(existing);
+        return "redirect:/bookings/my?success=updated";
+    }
+
+    /**
+     * Customer cancels their own booking — allowed while PENDING or CONFIRMED.
+     * The booking is permanently deleted so it no longer appears in the customer's list.
+     */
+    @PostMapping("/customer/cancel")
+    public String customerCancel(@RequestParam Long id, HttpSession session) {
+        User user = (User) session.getAttribute(SessionKeys.CUSTOMER);
+        if (user == null) return "redirect:/users/login";
+
+        Optional<Booking> opt = bookingService.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(user.getId())) {
+            return "redirect:/bookings/my";
+        }
+        Booking b = opt.get();
+        String st = nullToBlank(b.getStatus()).toUpperCase();
+        if (st.equals("COMPLETED")) {
+            // Completed trips cannot be cancelled/deleted
+            return "redirect:/bookings/my?error=cannotCancel";
+        }
+        // Delete the booking entirely so it is removed from the list
+        bookingService.deleteById(b.getId());
+        return "redirect:/bookings/my?success=cancelled";
+    }
+
     @GetMapping("/edit")
     public String editForm(@RequestParam Long id, Model model, HttpSession session) {
         return bookingService.findById(id)
@@ -182,6 +294,16 @@ public class BookingController {
         }
         b.setStatus("COMPLETED");
         bookingService.save(b);
+
+        // Notify the customer that their trip has been marked as completed
+        String packageName = packageService.findById(b.getPackageId())
+                .map(TourPackage::getName)
+                .orElse("your package");
+        String message = "🎉 Your trip '" + packageName + "' (Booking #" + b.getId()
+                + ") has been completed! You can now leave feedback."
+                + " Trip date: " + b.getBookingDate() + ".";
+        notificationService.create(b.getUserId(), b.getId(), message);
+
         return "redirect:/bookings/edit?id=" + id;
     }
 

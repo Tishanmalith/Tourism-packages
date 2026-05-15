@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * staff.txt:<br/>
+ * Line format ({@code staff.txt}):
  * {@code id,username,password,fullName,email,department}
  */
 @Service
@@ -74,7 +74,9 @@ public class StaffService {
     public Staff save(Staff staff) {
         List<Staff> all = loadAll();
         if (staff.getId() == null) {
-            staff.setId(nextId(all));
+            staff.getId();
+            long maxId = all.stream().map(Staff::getId).filter(Objects::nonNull).max(Long::compareTo).orElse(0L);
+            staff.setId(maxId + 1);
             all.add(staff);
         } else {
             boolean replaced = false;
@@ -122,31 +124,25 @@ public class StaffService {
         }
     }
 
-    private void writeAll(List<Staff> all) {
+    private void writeAll(List<Staff> staffList) {
         List<String> lines = new ArrayList<>();
         lines.add("# id,username,password,fullName,email,department");
-        for (Staff s : all.stream().sorted(Comparator.comparing(Staff::getId, Comparator.nullsLast(Long::compareTo))).toList()) {
+        for (Staff s : staffList.stream()
+                .sorted(Comparator.comparing(Staff::getId, Comparator.nullsLast(Long::compareTo)))
+                .toList()) {
             lines.add(delim.formatLine(List.of(
                     String.valueOf(s.getId()),
-                    s.getUsername(),
-                    s.getPassword(),
-                    s.getFullName(),
-                    s.getEmail(),
-                    s.getDepartment())));
+                    s.getUsername() == null ? "" : s.getUsername(),
+                    s.getPassword() == null ? "" : s.getPassword(),
+                    s.getFullName() == null ? "" : s.getFullName(),
+                    s.getEmail() == null ? "" : s.getEmail(),
+                    s.getDepartment() == null ? "" : s.getDepartment()
+            )));
         }
         try {
             delim.writeLines(staffFile, lines);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    private long nextId(List<Staff> staff) {
-        return staff.stream()
-                .map(Staff::getId)
-                .filter(Objects::nonNull)
-                .max(Long::compareTo)
-                .map(v -> v + 1)
-                .orElse(1L);
     }
 }

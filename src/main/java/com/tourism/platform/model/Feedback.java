@@ -2,9 +2,8 @@ package com.tourism.platform.model;
 
 import java.io.Serializable;
 
-public class Feedback implements Serializable {
+public class Feedback extends BaseEntity<Long> {
 
-    private Long id;
     /** References {@link User#getId()} (UUID string). */
     private String userId;
     private Long packageId;
@@ -15,12 +14,9 @@ public class Feedback implements Serializable {
     public Feedback() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    @Override
+    public String getEntityDescriptor() {
+        return "Feedback " + getId() + " - Rating: " + rating;
     }
 
     public String getUserId() {

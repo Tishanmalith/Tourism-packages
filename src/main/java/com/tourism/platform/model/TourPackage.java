@@ -2,9 +2,8 @@ package com.tourism.platform.model;
 
 import java.io.Serializable;
 
-public class TourPackage implements Serializable {
+public class TourPackage extends BaseEntity<Long> {
 
-    private Long id;
     private String name;
     private String description;
     private double price;
@@ -15,12 +14,9 @@ public class TourPackage implements Serializable {
         this.durationDays = 7;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    @Override
+    public String getEntityDescriptor() {
+        return name + " - " + durationDays + " days";
     }
 
     public String getName() {

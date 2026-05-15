@@ -16,7 +16,7 @@ public class CustomerAuthInterceptor implements HandlerInterceptor {
         HttpSession session = request.getSession(false);
         User user = session == null ? null : (User) session.getAttribute(SessionKeys.CUSTOMER);
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/users/login?error=1");
+            response.sendRedirect(request.getContextPath() + "/?loginRequired=true");
             return false;
         }
         return true;

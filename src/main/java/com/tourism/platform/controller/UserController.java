@@ -115,11 +115,11 @@ public class UserController {
 
     @PostMapping("/create")
     public String adminCreate(@RequestParam String username,
-                             @RequestParam String password,
-                             @RequestParam String fullName,
-                             @RequestParam String email,
-                             @RequestParam String phone,
-                             Model model) {
+                              @RequestParam String password,
+                              @RequestParam String fullName,
+                              @RequestParam String email,
+                              @RequestParam String phone,
+                              Model model) {
         if (invalid(username, password, fullName, email)) {
             model.addAttribute("message", "Username, password, full name and email are required.");
             model.addAttribute("user", populateUser(null, username, password, fullName, email, phone));
@@ -177,12 +177,12 @@ public class UserController {
 
     @PostMapping("/update")
     public String update(@RequestParam String id,
-                        @RequestParam String username,
-                        @RequestParam String password,
-                        @RequestParam String fullName,
-                        @RequestParam String email,
-                        @RequestParam String phone,
-                        Model model) {
+                         @RequestParam String username,
+                         @RequestParam String password,
+                         @RequestParam String fullName,
+                         @RequestParam String email,
+                         @RequestParam String phone,
+                         Model model) {
         if (invalid(username, password, fullName, email)) {
             model.addAttribute("message", "Username, password, full name and email are required.");
             model.addAttribute("user", populateUser(id, username, password, fullName, email, phone));
@@ -233,11 +233,11 @@ public class UserController {
     private static final String UNIFIED_ACCOUNT_TYPE = "Passenger";
 
     private static User populateUser(String id,
-                                    String username,
-                                    String password,
-                                    String fullName,
-                                    String email,
-                                    String phone) {
+                                     String username,
+                                     String password,
+                                     String fullName,
+                                     String email,
+                                     String phone) {
         User u = new User();
         u.setId(id);
         u.setUsername(ValidationSupport.trimLen(username == null ? "" : username.trim(), 120));
