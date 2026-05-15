@@ -43,7 +43,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(adminAuthInterceptor)
                 .addPathPatterns("/packages/**")
+<<<<<<< HEAD
                 .excludePathPatterns("/packages/detail", "/packages/list", "/packages/");
+=======
+                .excludePathPatterns("/packages/detail");
+>>>>>>> 0f0e1293dfa05602195c13f71b62bb681134100f
 
         registry.addInterceptor(adminAuthInterceptor)
                 .addPathPatterns("/destinations/**");
@@ -71,7 +75,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/notifications/my", "/notifications/mark-read");
 
         registry.addInterceptor(sharedAuthInterceptor)
+<<<<<<< HEAD
                 .addPathPatterns("/packages/detail", "/packages/list", "/packages/");
+=======
+                .addPathPatterns("/packages/detail");
+>>>>>>> 0f0e1293dfa05602195c13f71b62bb681134100f
 
         registry.addInterceptor(bookingManagementInterceptor)
                 .addPathPatterns("/bookings/**")
