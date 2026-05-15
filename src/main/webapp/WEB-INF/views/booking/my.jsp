@@ -116,6 +116,12 @@
                                     <td class="small text-secondary">${empty b.notes ? '—' : b.notes}</td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1 flex-wrap">
+                                            <%-- View Package Details --%>
+                                            <a class="btn btn-sm btn-outline-info rounded-pill action-btn"
+                                               href="${pageContext.request.contextPath}/packages/detail?id=${b.packageId}">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+
                                             <%-- Edit: only for PENDING --%>
                                             <c:choose>
                                                 <c:when test="${canEdit}">
